@@ -1,9 +1,9 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-  <id>com.app.ContextGrab</id>
+  <id>com.kirikodevv.ContextGrab</id>
   <name>Context Grab</name>
   <vendor email="jonahelbaz96@gmail.com">Jonah Elbaz</vendor>
-  <description><![CDATA[desc afsf jasfj lkasjfk asjkfl ajslkasf asf asf asfasfsafasfasf ]]></description>
+  <description><![CDATA[Copy a function with its full context (related functions and classes) to your clipboard ]]></description>
 
   <!-- Product and plugin compatibility requirements.
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->

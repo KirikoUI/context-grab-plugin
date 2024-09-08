@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.util.Objects;
 
 public class GrabContextAction extends AnAction {
+    String PACKAGE_NAME = "kirkodevv/context-grab";
 
     public @NotNull ActionUpdateThread getActionUpdateThread() {
         return ActionUpdateThread.EDT;
@@ -85,7 +86,7 @@ public class GrabContextAction extends AnAction {
     private void packageCheck(Project project, String projectPath, String manager) {
         boolean isYarn = Objects.equals(manager, "yarn");
 
-        File nodeModules = new File(projectPath, "node_modules/@monosimple/context-grab");
+        File nodeModules = new File(projectPath, "node_modules/" + PACKAGE_NAME);
         if (!nodeModules.exists()) {
             int result = Messages.showYesNoDialog(project,
                     "The context-grab package is not installed. Would you like to install it?",
@@ -95,8 +96,8 @@ public class GrabContextAction extends AnAction {
             if (result != Messages.YES) return;
 
             String installCommand = isYarn ?
-                    "yarn add @monosimple/context-grab --dev" :
-                    "npm install @monosimple/context-grab --save-dev";
+                    "yarn add --dev " + PACKAGE_NAME :
+                    "npm install --save-dev " + PACKAGE_NAME;
 
             try {
                 Process p = Runtime.getRuntime().exec(installCommand, null, new File(projectPath));
@@ -135,7 +136,7 @@ public class GrabContextAction extends AnAction {
         String relativeFilePath = filePath.substring(projectPath.length() + 1);
 
 
-        String packagePath = projectPath + "/node_modules/@monosimple/context-grab";
+        String packagePath = projectPath + "/node_modules/" + PACKAGE_NAME;
         File packageFile = new File(packagePath);
         String resolvedPath = packageFile.getCanonicalPath();
 
