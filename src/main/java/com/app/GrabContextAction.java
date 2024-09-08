@@ -4,11 +4,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiElement;
@@ -23,7 +19,7 @@ import java.io.InputStreamReader;
 import java.util.Objects;
 
 public class GrabContextAction extends AnAction {
-    String PACKAGE_NAME = "kirkodevv/context-grab";
+    String PACKAGE_NAME = "@kirikodevv/context-grab";
 
     public @NotNull ActionUpdateThread getActionUpdateThread() {
         return ActionUpdateThread.EDT;
@@ -69,6 +65,47 @@ public class GrabContextAction extends AnAction {
         e.getPresentation().setEnabledAndVisible(project != null && editor != null);
     }
 
+    private void getFunctionContext(@NotNull AnActionEvent e, String functionName) {
+        Project project = e.getProject();
+        if (project == null) return;
+
+        String projectPath = project.getBasePath();
+        if (projectPath == null) return;
+
+        String packageJsonDir = findPackageJsonDir(projectPath);
+        if (packageJsonDir == null) {
+            Messages.showErrorDialog(project, "No package.json found in parent directories", "Grab Context");
+            return;
+        }
+
+        // get package manager choice
+        String pm = this.getPackageManager(packageJsonDir);
+        if (Objects.equals(pm, "")) {
+            Messages.showErrorDialog(project, "No yarn.lock or package-lock.json found", "Grab Context");
+            return;
+        }
+
+        // make sure package is installed
+        this.packageCheck(project, packageJsonDir, pm);
+
+        String filePath = e.getData(CommonDataKeys.VIRTUAL_FILE).getPath();
+        String relativeFilePath = filePath.substring(packageJsonDir.length() + 1);
+
+        String command = pm + " run " + " start " + packageJsonDir + " " + relativeFilePath + " " + functionName;
+        this.executeCommand(command, project, packageJsonDir + "/node_modules/" + PACKAGE_NAME, "Context saved to clipboard successfully"  );
+    }
+
+    private String findPackageJsonDir(String currentPath) {
+        File dir = new File(currentPath);
+        while (dir != null) {
+            if (new File(dir, "package.json").exists()) {
+                return dir.getAbsolutePath();
+            }
+            dir = dir.getParentFile();
+        }
+        return null;
+    }
+
     private String getPackageManager(String projectPath) {
         boolean isYarn = new File(projectPath, "yarn.lock").exists();
         boolean isNpm = new File(projectPath, "package-lock.json").exists();
@@ -95,88 +132,40 @@ public class GrabContextAction extends AnAction {
 
             if (result != Messages.YES) return;
 
-            String installCommand = isYarn ?
-                    "yarn add --dev " + PACKAGE_NAME :
-                    "npm install --save-dev " + PACKAGE_NAME;
+            String command = isYarn ?
+                    "yarn add --ignore-workspace-root-check --dev " + PACKAGE_NAME :
+                    "npm install --ignore-workspace-root-check --save-dev " + PACKAGE_NAME;
 
-            try {
-                Process p = Runtime.getRuntime().exec(installCommand, null, new File(projectPath));
-                int exitCode = p.waitFor();
-                if (exitCode != 0) {
-                    Messages.showErrorDialog(project, "Failed to install context-grab", "Grab Context");
-                    return;
-                }
-            } catch (IOException | InterruptedException ex) {
-                Messages.showErrorDialog(project, "Error installing context-grab: " + ex.getMessage(), "Grab Context");
-                return;
-            }
+            this.executeCommand(command, project, projectPath, "Context Grab installed");
         }
     }
 
-    private void getFunctionContext(@NotNull AnActionEvent e, String functionName) throws IOException {
-        Project project = e.getProject();
-        if (project == null) return;
+    private void executeCommand(String command, Project project, String projectPath, String success) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-c", command);
+            pb.directory(new File(projectPath));
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
 
-        String projectPath = project.getBasePath();
-        if (projectPath == null) return;
-
-        // get package manager choice
-        String pm = this.getPackageManager(projectPath);
-        if (Objects.equals(pm, "")) {
-            Messages.showErrorDialog(project, "No yarn.lock or package-lock.json found", "Grab Context");
-            return;
-        }
-
-        boolean isYarn = Objects.equals(pm, "yarn");
-
-        // make sure package is installed
-        this.packageCheck(project, projectPath, pm);
-
-        String filePath = e.getData(CommonDataKeys.VIRTUAL_FILE).getPath();
-        String relativeFilePath = filePath.substring(projectPath.length() + 1);
-
-
-        String packagePath = projectPath + "/node_modules/" + PACKAGE_NAME;
-        File packageFile = new File(packagePath);
-        String resolvedPath = packageFile.getCanonicalPath();
-
-        String command = pm + " run " + " start " + projectPath + " " + relativeFilePath + " " + functionName;
-        this.executeCommand(command, project, resolvedPath);
-    }
-
-    private void executeCommand(String command, Project project, String projectPath) {
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Grabbing Context", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                indicator.setIndeterminate(true);
-                try {
-                    ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-c", command);
-                    pb.directory(new File(projectPath));
-                    pb.redirectErrorStream(true);
-                    Process p = pb.start();
-
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                    StringBuilder output = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        output.append(line).append("\n");
-                    }
-
-                    int exitCode = p.waitFor();
-                    String finalOutput = output.toString();
-                    ApplicationManager.getApplication().invokeLater(() -> {
-                        if (exitCode == 0) {
-                            Messages.showInfoMessage(project, "Context grabbed successfully", "Grab Context");
-                        } else {
-                            Messages.showErrorDialog(project, "Error grabbing context:\nCommand: " + command + "\nOutput:\n" + finalOutput, "Grab Context");
-                        }
-                    });
-                } catch (IOException | InterruptedException ex) {
-                    ApplicationManager.getApplication().invokeLater(() ->
-                            Messages.showErrorDialog(project, "Error executing command: " + ex.getMessage(), "Grab Context")
-                    );
-                }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            StringBuilder output = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
             }
-        });
+
+            int exitCode = p.waitFor();
+            String finalOutput = output.toString();
+
+            if (exitCode == 0) {
+                Messages.showInfoMessage(project, success + " " + command, "Grab Context");
+            } else {
+                Messages.showErrorDialog(project, "Error grabbing context:\nCommand: " + command + "\nOutput:\n" + finalOutput + "\nPath: " + projectPath, "Grab Context");
+                System.exit(1);
+            }
+        } catch (IOException | InterruptedException ex) {
+            Messages.showErrorDialog(project, "Error executing command: " + ex.getMessage() + ". Ran at " + projectPath, "Grab Context");
+            System.exit(1);
+        }
     }
 }

@@ -2,13 +2,15 @@
 <idea-plugin>
   <id>com.kirikodevv.ContextGrab</id>
   <name>Context Grab</name>
-  <vendor email="jonahelbaz96@gmail.com">Jonah Elbaz</vendor>
+  <vendor email="jonah-elbaz@gmail.com">Jonah Elbaz</vendor>
   <description><![CDATA[Copy a function with its full context (related functions and classes) to your clipboard ]]></description>
 
   <!-- Product and plugin compatibility requirements.
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.lang</depends>
+  <depends>com.intellij.modules.webstorm</depends>
+
   <depends>JavaScript</depends>
 
   <!-- Extension points defined by the plugin.

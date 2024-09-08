@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.kirikodevv"
-version = "1.0-SNAPSHOT"
+version = "1.0"
 
 repositories {
   mavenCentral()
@@ -30,8 +30,8 @@ tasks {
   }
 
   patchPluginXml {
-    sinceBuild.set("242")  // Adjusted for WebStorm 2023.3
-    untilBuild.set("242.*")  // Limit to 2023.3.x versions
+    sinceBuild.set("240.*")
+    untilBuild.set("242.*")
   }
 
   signPlugin {
