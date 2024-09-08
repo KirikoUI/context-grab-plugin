@@ -3,7 +3,11 @@
   <id>com.kirikodevv.ContextGrab</id>
   <name>Context Grab</name>
   <vendor email="jonah-elbaz@gmail.com">Jonah Elbaz</vendor>
-  <description><![CDATA[Copy a function with its full context (related functions and classes) to your clipboard ]]></description>
+  <description><![CDATA[
+    Effortlessly copy functions with their full context. This plugin allows you to grab a selected function along with all referenced functions and related classes, copying them to your clipboard. Ideal for sharing code snippets with complete context or for quick code analysis.
+  ]]></description>
+
+  <idea-version since-build="240.0" until-build="242.0"/>
 
   <!-- Product and plugin compatibility requirements.
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
@@ -17,7 +21,7 @@
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
 
   <actions>
-    <action id="com.app.GrabContext" class="com.app.GrabContextAction" text="Grab Context" description="Grab function and its context">
+    <action id="com.kirikodevv.GrabContext" class="com.kirikodevv.GrabContextAction" text="Grab Context" description="Grab function and its context">
       <add-to-group group-id="EditorPopupMenu" anchor="first"/>
     </action>
   </actions>
