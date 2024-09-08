@@ -1,0 +1,22 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+  <id>com.app.ContextGrab</id>
+  <name>Context Grab</name>
+  <vendor email="jonahelbaz96@gmail.com">Jonah Elbaz</vendor>
+  <description><![CDATA[desc afsf jasfj lkasjfk asjkfl ajslkasf asf asf asfasfsafasfasf ]]></description>
+
+  <!-- Product and plugin compatibility requirements.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.lang</depends>
+  <depends>JavaScript</depends>
+
+  <!-- Extension points defined by the plugin.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+
+  <actions>
+    <action id="com.app.GrabContext" class="com.app.GrabContextAction" text="Grab Context" description="Grab function and its context">
+      <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+    </action>
+  </actions>
+</idea-plugin>
