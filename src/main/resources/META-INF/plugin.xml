@@ -5,6 +5,16 @@
   <vendor email="jonah-elbaz@gmail.com">Jonah Elbaz</vendor>
   <description><![CDATA[
     Effortlessly copy functions with their full context. This plugin allows you to grab a selected function along with all referenced functions and related classes, copying them to your clipboard. Ideal for sharing code snippets with complete context or for quick code analysis.
+
+    How To:
+
+    1. Place your cursor on a function
+    2. Right click
+    3. Click "Grab Context"
+
+    Your code snippet with context is now in your clipboard.
+    This is ideal for porting code to LLM to provide maximal context.
+
   ]]></description>
 
   <idea-version since-build="240.0" until-build="242.0"/>
